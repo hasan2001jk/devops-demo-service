@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  webapp:
+    depends_on:
+      - database
+    build:
+      context: ./
+      dockerfile: Dockerfile1
+    network_mode: "host"
+    environment:
+      SERVICE_DEBUG: "False"
+      SERVICE_DB_PATH: "/data"
+      SERVICE_HOST: "0.0.0.0"
+      SERVICE_PORT: "8000"
+  database:
+    image: postgres:latest
+    restart: always
+    network_mode: "host"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
