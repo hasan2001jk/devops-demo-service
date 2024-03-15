@@ -27,7 +27,7 @@ jobs:
 
       - name: Run PostgreSQL container
         run: |
-          sudo docker run -d --network host --name postgresql \
+          sudo docker run -d --network host --name database \
             -e POSTGRES_PASSWORD=postgres \
             -e POSTGRES_USER=postgres \
             -e POSTGRES_DB=postgres \
