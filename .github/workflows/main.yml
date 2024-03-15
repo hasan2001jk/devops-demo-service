@@ -38,6 +38,9 @@ jobs:
       - name: Make Migrations
         run: cd devops_demo && poetry run python manage.py makemigrations
 
+      - name: Modify hosts file
+        run: echo "127.0.0.1   database" | sudo tee -a /etc/hosts
+
       - name: Test
         run: cd devops_demo && poetry run python manage.py test
 
