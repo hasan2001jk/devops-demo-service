@@ -1,0 +1,42 @@
+name: CI_Process
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  Continuous_integration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+
+      - name: Setting up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setting up pipx
+        uses: CfirTsabari/actions-pipx@v1
+        
+      - name: Install poetry using pipx
+        run: pipx install poetry
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run PostgreSQL container
+        run: |
+          sudo docker run -d --network host --name postgresql \
+            -e POSTGRES_PASSWORD=postgres \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_DB=postgres \
+            postgres:latest
+      - name: Make poetry install
+        run: poetry install
+
+      - name: Make Migrations
+        run: cd devops_demo && poetry run python manage.py makemigrations
+
+      - name: Test
+        run: cd devops_demo && poetry run python manage.py test
