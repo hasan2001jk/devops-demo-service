@@ -27,5 +27,7 @@ ENV SERVICE_PORT=8000
 
 WORKDIR /app/devops_demo
 
+RUN poetry run python manage.py makemigrations
+
 # Run migrations and start the Django development server
 CMD poetry run python manage.py migrate && poetry run python manage.py runserver $SERVICE_HOST:$SERVICE_PORT
