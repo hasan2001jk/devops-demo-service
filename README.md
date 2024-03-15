@@ -1,55 +1,65 @@
+# DevOps Demo Service
 
-# Описание тестового сервиса
+This is a Django application for the DevOps Demo Service.
 
-В этом репозитории тестовый сервис для Devops кандидатов и тестовое задание.
+## Requirements
 
-Для управления зависимостями используется пакет poetry. Он позволяет управлять виртуальными окружениями и устанавливать в них пакеты. Так же позволяет запускать команды внутри виртуального окружения. Запуск через Poetry используется только в среде разработка, внутри docker контейнера все зависимости ставятся глобально и команды выполняются без использованя виртуальных окружений и poetry.
+- Docker
+- Docker Compose
 
-## Создание виртуального окружения
-Выполниь команду:
-`poetry install`
-Она создаст виртуальное окружение и установит все необходимые пакеты
+## Setup
 
-## Запуск сервиса
-Все команды `poetry run...` необходимо выполнять из каталога `devops_demo` там где лежит файл `manage.py`
+1. Clone this repository:
 
-Перед тем как запустить сервис, необходимо подготовить базу данных. Для этого надо сгенерировать миграции:
-`poetry run python manage.py makemigrations`
-И выполнить их:
-`poetry run python manage.py migrate`
-после этих команд в базе данных будут созданы все необходимые таблицы.
-Для запуска сервиса локально в виртуальном окружении выполнить команду:
-`poetry run python manage.py runserver 0.0.0.0:8000`
-Для создания пользователя в консоли после всех минраций надо выполнить команду:
-`poetry run python  manage.py createsuperuser`
-После чего в интерактивном режиме ввести все запрашиваемые данные.
+   ```bash
+   git clone https://github.com/yourusername/devops-demo-service.git
+   cd devops-demo-service
 
-## Запуск тестов в виртуальном окружении
-Для запуска тестов локально в виртуальном окружении выполнить команду:
-`poetry run python manage.py test`
-Эта команда выполнит все тесты в проекте
+2. Build and start the Docker containers:
+   ```bash   
+   docker-compose up --build
 
-## Требования
-Для запуска сервиса и тестов необходима база данных Postgres. Ее можно поднять локально или внутри docker. Для того, что бы передать сервису параметры подключения к базе данных можно использовать переменные окружения. Например:
-```
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=127.0.0.1
-DB_PORT=5432
-```
-В примере указаны значения по умолчанию.
+3.Once the containers are up and running, you can access the application at http://localhost:8000.
+4.To stop the containers, press Ctrl + C, and then run:
+  ```bash
+  docker-compose down
 
+## Usage
+### Creating a Superuser
+A superuser is required to access the admin panel. You can create a superuser using the following command:
+  ```bash
+  docker-compose exec webapp bash -c "poetry run python manage.py createsuperuser --noinput --username <your_username> --email <your_email>"
 
-# Задание
-1. Надо подготовить docker-compose.yml файл, который позволит собирать и запускать базу данных Postgres, выполнять все необходимые миграции и запускать сервис. Как результат этого шага  я должен иметь возможность выполнить команду `docker-compose build` для сборки свежего образа сервиса. И `docker-compose up` для запуска сервиса. Посдле запуска в браузере по адресу http://localhost:8000/admin я должен увидить страницу с формой ввода логина и пароля. Порт на котором будет запущен сервис можете выбрать на ваше усмотрение.
-2. Надо реализовать CI процесс в **Github** для запуска тестов и в случае их успешного прохождения выполнить сборку docker образа. Если же тесты не прошли весь CI процесс должен падать с ошибкой.
+### Accessing the Admin Panel
+1.Navigate to http://localhost:8000/admin in your web browser.
+2.Log in with the username and password of the superuser you created
 
-### Усложнения
-3. В качестве усложнения первого задания, запустить сервис с испоьзованием Nginx и созданием пользователя при старте docker-compose. В этом случае в форме ввода логина и пароля я смогу ввести данные и перейти в панель администратора.
-4. В качестве усложнения задания 2 настроить тегирование собираемого образа и задеплоить его в docker-hub (https://hub.docker.com/) в открытый репозиторий. В нем доступна бесплатная загрузка одного образа. Этого дотаточно для тестового задания.
+## Formalized Explanation of `docker-compose.yml` Configuration:
 
-Для части задания с docker-compose.yml лучше форкнуть текущий репозиторий и положить файл туда. Так проще выполнять задание и будет возможность легко проверить как вы его выполнили.
-Для выполнения CI можно форкнуть текущий репозиторий и все выполнить в нем. Или сделать свой репозиторий, который будет выгружать текущий и выполнять CI. Это решение остается за исполнителем. 
+**Services**:
 
-В форкнутом репозитории в README.md описать инструкции как запускать docker-compose. И все шаги, которые необходимо выполнить, для тестирования выполненого задания. Если такие шаги потребуются. 
+  - **webapp**:
+      - **Purpose**: This service is responsible for running your web application.
+      - **Build**: Builds the application image based on the Dockerfile located within the current directory (.).
+      - **Dependencies**: Relies on the database service for database connectivity.
+      - **Ports**: Exposes the web application's development server on port 8000 of the host machine. This allows you to access the application through http://localhost:8000 in your browser.
+      - **Environment Variables**: Sets environment variables used within the application, such as SERVICE_DEBUG (for debugging), SERVICE_DB_PATH (database connection information), SERVICE_HOST (IP address the application listens on), and SERVICE_PORT (port number used by the application).
+
+  - **database**:
+        - **Purpose**: This service provides a PostgreSQL database instance.
+        - **Image**: Utilizes the official postgres:latest image from Docker Hub.
+        - **Restart**: Configured to automatically restart in case of failure.
+        - **Ports**: Maps the container's port 5432 (default for PostgreSQL) to the host's port 5432. This grants access to the database from the webapp service or other containers.
+        - **Environment Variables**: Defines database credentials (POSTGRES_PASSWORD, POSTGRES_USER, and POSTGRES_DB) for secure access.
+        - **Volumes**: Utilizes a named volume named pgdata to persist database data, ensuring data is preserved even if the container is recreated.
+
+    - **nginx**:
+        - **Purpose**: This service incorporates an NGINX web server as a reverse proxy for the web application (if used).
+        - **Image**: Employs the official nginx:latest image.
+        - **Ports**: Maps container port 80 (default for HTTP) to the host's port 80, acting as the primary entry point for web traffic.
+        - **Dependencies**: Relies on the webapp service to be running first.
+        - **Volumes**: Mounts the custom Nginx configuration file (nginx.conf) from the host machine to the container's /etc/nginx/nginx.conf location, enabling configuration customization.
+
+- **Volumes**:
+
+    - **pgdata**: This named volume is specifically created to store and persist PostgreSQL database data. This ensures that data is not lost even if the container is recreated or stopped.
